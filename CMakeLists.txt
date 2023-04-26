@@ -3,7 +3,7 @@
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 
-project(log_par VERSION ${PROJECT_VESRION})
+project(async VERSION ${PROJECT_VESRION})
 configure_file(./lib/version_lib/version_define.h.in version_define.h)
 
 set(CMAKE_CXX_STANDARD 20)
