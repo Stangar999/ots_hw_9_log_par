@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <vector>
+
 #include "async.h"
 
 using namespace std;
@@ -15,5 +16,6 @@ int main(int argc, const char* argv[]) {
   async::disconnect(h);
   async::disconnect(h2);
 
+  system("pause");
   return 0;
 }

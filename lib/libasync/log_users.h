@@ -20,7 +20,7 @@ class FileLogger : public IObserver {
   }
 
   ~FileLogger() {
-    //    std::cout << "~FileLogger_start" << std::endl;
+    std::cout << "~FileLogger_start" << std::endl;
     _is_end = true;
     _cv.notify_one();
     for (auto& thread : _pool_threads) {
@@ -28,7 +28,7 @@ class FileLogger : public IObserver {
         thread.join();
       }
     }
-    //    std::cout << "~FileLogger_end" << std::endl;
+    std::cout << "~FileLogger_end" << std::endl;
   }
 
   void UpdateEnd(const CommandHolder& comand_holder) override {
@@ -63,15 +63,13 @@ class FileLogger : public IObserver {
         // нотифаить надо что б выставить флаг конца и выйти из цикла
         // не могу найти, понять почему так вроде запретов нет?
         while (!_is_end) {
-          // std::cout << "Stop_stand " << std::this_thread::get_id() <<
-          // std::endl;
+          std::cout << "Stop_stand " << std::this_thread::get_id() << std::endl;
           _cv.wait(ul);
-          // std::cout << "Wake_up " << std::this_thread::get_id() << std::endl;
+          std::cout << "Wake_up " << std::this_thread::get_id() << std::endl;
         }
-        std::cout << "Free " << std::this_thread::get_id() << std::endl;
-        // потокобезопасно меняем _comand_queue
-        // command заранее сохраняем исходя из того что операция быстрая
-        // а cur_file << command << std::endl; долгая
+        //  потокобезопасно меняем _comand_queue
+        //  command заранее сохраняем исходя из того что операция быстрая
+        //  а cur_file << command << std::endl; долгая
         {
           std::scoped_lock l(_m_comands);
           if (!_comand_queue.empty()) {
@@ -101,7 +99,8 @@ class FileLogger : public IObserver {
 
       std::ofstream cur_file;
       cur_file.open(cur_path);
-      cur_file << std::move(command._res_command) << std::endl;
+      cur_file << command._res_command << std::endl;
+      std::cout << "Write " << command._res_command << std::endl;
       cur_file.close();
       // std::this_thread::sleep_for(std::chrono::duration<int, std::deci>(30));
     }

@@ -4,23 +4,20 @@ project(log_par_p LANGUAGES CXX)
 
 add_executable(log_par_e main.cpp
 )
-# TODO
-# Чем отличается find_library от find_package
-# и когда надо использовать find_library
-# а когда достаточно и target_link_libraries
 
-# Я думал что в target_link_libraries надо передавать конккретный путь,
-# а если хочешь что бы CMake сам нашел библиотеку по имени
-# надо find_library(имяпеременной куда сохраниться путь к библиотеке
-# и название искомой библиотеки) типо find_library(CurrLib NAMES liblibasync_l)
-# а потом эту переменную в target_link_libraries(log_par_e PRIVATE CurrLib)
-# но так не работает
+#find_library(LibAsync NAMES libasync_l HINTS "${CMAKE_BINARY_DIR}/lib/libasync")
+#target_link_libraries(log_par_e PRIVATE "${LibAsync}")
 
-# Почему такая запись выдает ошибку
-# find_library(CurrLib NAMES liblibasync_l)
-# target_link_libraries(log_par_e PRIVATE CurrLib)
+#target_include_directories(log_par_e PRIVATE "../lib/libasync")
 
+# или просто
 target_link_libraries(log_par_e PRIVATE libasync_l)
-target_include_directories(log_par_e PRIVATE "../lib/libasync/")
+target_include_directories(log_par_e PRIVATE "../lib/libasync")
+# так как libasync_l создается в этом проекте, а target_link_libraries гибче,
+#см. https://cmake.org/cmake/help/latest/command/target_link_libraries.html#id3
+#(в частности, если в вашем проекте или подпроекте создаете библиотеку somename,
+#то можете передавать в target_link_libraries это имя цели, somename.
+#Cmake под капотом сам заменит его на полный путь.
+
 
 

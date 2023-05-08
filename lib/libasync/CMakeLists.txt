@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Threads REQUIRED)
 
+set ( CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 add_library(libasync_l SHARED
 command_handler.h
 log_users.h
