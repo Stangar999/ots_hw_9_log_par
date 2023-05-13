@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int main(int argc, const char* argv[]) {
+int main(int argc, const char *argv[]) {
   std::size_t bulk = 5;
   auto h = async::connect(bulk);
   auto h2 = async::connect(bulk);
@@ -16,6 +16,5 @@ int main(int argc, const char* argv[]) {
   async::disconnect(h);
   async::disconnect(h2);
 
-  system("pause");
   return 0;
 }

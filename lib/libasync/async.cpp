@@ -11,25 +11,26 @@
 
 namespace async {
 
-std::unordered_map<void*, std::unique_ptr<CommandHandler>> _command_handler;
+std::unordered_map<void *, std::unique_ptr<CommandHandler>> _command_handler;
 
 handle_t connect(std::size_t bulk) {
   std::unique_ptr<IObserver> ostream_logger = std::make_unique<OstreamLogger>();
-  std::shared_ptr<IObserver> file_logger = FileLogger::GetInst();
+  std::shared_ptr<IObserver> file_logger = FileLogger::GetFileLogger();
   std::unique_ptr ch = std::make_unique<CommandHandler>(bulk);
-  ch->AddObserver(file_logger).AddObserver(std::move(ostream_logger));
-  CommandHandler* ptr = ch.get();
+  ch->AddObserver(std::move(file_logger))
+      .AddObserver(std::move(ostream_logger));
+  CommandHandler *ptr = ch.get();
   _command_handler.emplace(ptr, std::move(ch));
 
   return ptr;
 }
 
-void receive(handle_t handle, const char* data, std::size_t size) {
+void receive(handle_t handle, const char *data, std::size_t size) {
   auto it = _command_handler.find(handle);
   if (it == _command_handler.end()) {
     return;
   }
-  auto& [_, c_h] = *it;
+  auto &[_, c_h] = *it;
   // что бы разбить строку на отдельные команды по \n
   std::stringstream ss(std::string(data, size));
   std::string command;
@@ -38,8 +39,6 @@ void receive(handle_t handle, const char* data, std::size_t size) {
   }
 }
 
-void disconnect(handle_t handle) {
-  _command_handler.erase(handle);
-}
+void disconnect(handle_t handle) { _command_handler.erase(handle); }
 
-}  // namespace async
+} // namespace async

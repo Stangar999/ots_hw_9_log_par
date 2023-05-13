@@ -25,7 +25,7 @@ class IObservered {
 class ObserveredCmd : public IObservered {
  public:
   IObservered& AddObserver(std::shared_ptr<IObserver> observer) override {
-    _observers.push_back(observer);
+    _observers.push_back(std::move(observer));
     return *this;
   };
 
