@@ -15,11 +15,10 @@ std::unordered_map<void *, std::unique_ptr<CommandHandler>> _command_handler;
 
 handle_t connect(std::size_t bulk) {
   std::unique_ptr<IObserver> ostream_logger = std::make_unique<OstreamLogger>();
-  // std::shared_ptr<IObserver> file_logger = FileLogger::GetFileLogger();
+  std::shared_ptr<IObserver> file_logger = FileLogger::GetFileLogger();
   std::unique_ptr ch = std::make_unique<CommandHandler>(bulk);
-  ch->/*AddObserver(std::move(file_logger))
-      .*/
-      AddObserver(std::move(ostream_logger));
+  ch->AddObserver(std::move(file_logger))
+      .AddObserver(std::move(ostream_logger));
   CommandHandler *ptr = ch.get();
   _command_handler.emplace(ptr, std::move(ch));
 

@@ -104,6 +104,7 @@ std::mutex OstreamLogger::m;
 // тут поток создается не лениво, лениво потоки создаются в FileLogger
 std::unique_ptr<std::jthread> OstreamLogger::th_log_cons(
     new std::jthread(WriteConsole));
+std::atomic<bool> OstreamLogger::IsAlreadyDeInit = false;
 
 void OstreamLogger::UpdateEnd(const CommandHolder &comand_holder) {
   {
@@ -116,7 +117,9 @@ void OstreamLogger::UpdateEnd(const CommandHolder &comand_holder) {
 // по 2 предложению, вызов DeInit только из функции finalize()
 // поэтому механизм поавторной инициализации не предусмотрен
 void OstreamLogger::DeInit() {
-  th_log_cons.reset(nullptr);
+  if (!IsAlreadyDeInit) {
+    th_log_cons.reset(nullptr);
+  }
 }
 
 void OstreamLogger::WriteConsole(std::stop_token stoken) {

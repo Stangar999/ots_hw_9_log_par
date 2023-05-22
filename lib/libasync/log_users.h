@@ -54,4 +54,5 @@ class OstreamLogger : public IObserver {
   static std::condition_variable_any cv;
   static std::mutex m;
   static std::unique_ptr<std::jthread> th_log_cons;
+  static std::atomic<bool> IsAlreadyDeInit;
 };
