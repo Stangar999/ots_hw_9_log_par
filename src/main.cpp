@@ -16,5 +16,11 @@ int main(int argc, const char *argv[]) {
   async::disconnect(h);
   async::disconnect(h2);
 
+  auto h3 = async::connect(bulk);
+  async::receive(h3, "55", 2);
+  async::disconnect(h3);
+
+  async::finalize();
+
   return 0;
 }

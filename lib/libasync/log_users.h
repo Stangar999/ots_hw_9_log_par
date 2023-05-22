@@ -16,6 +16,7 @@
 class FileLogger : public IObserver {
  public:
   static std::shared_ptr<FileLogger> GetFileLogger();
+  static void Deinit();
 
   ~FileLogger();
 
@@ -28,6 +29,9 @@ class FileLogger : public IObserver {
   }
 
   void WriteAndWaite();
+
+  static std::shared_ptr<FileLogger> _file_logger;
+  static std::mutex _mx;
 
   std::queue<CommandHolder> _comand_queue;
   std::vector<std::thread> _pool_threads;
@@ -42,10 +46,12 @@ class OstreamLogger : public IObserver {
  public:
   void UpdateEnd(const CommandHolder &comand_holder) override;
 
+  static void DeInit();
+
  private:
   static void WriteConsole(std::stop_token stoken);
   static std::queue<CommandHolder> _comand_queue;
   static std::condition_variable_any cv;
   static std::mutex m;
-  static std::jthread th_log_cons;
+  static std::unique_ptr<std::jthread> th_log_cons;
 };

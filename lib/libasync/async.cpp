@@ -15,10 +15,11 @@ std::unordered_map<void *, std::unique_ptr<CommandHandler>> _command_handler;
 
 handle_t connect(std::size_t bulk) {
   std::unique_ptr<IObserver> ostream_logger = std::make_unique<OstreamLogger>();
-  std::shared_ptr<IObserver> file_logger = FileLogger::GetFileLogger();
+  // std::shared_ptr<IObserver> file_logger = FileLogger::GetFileLogger();
   std::unique_ptr ch = std::make_unique<CommandHandler>(bulk);
-  ch->AddObserver(std::move(file_logger))
-      .AddObserver(std::move(ostream_logger));
+  ch->/*AddObserver(std::move(file_logger))
+      .*/
+      AddObserver(std::move(ostream_logger));
   CommandHandler *ptr = ch.get();
   _command_handler.emplace(ptr, std::move(ch));
 
@@ -39,6 +40,16 @@ void receive(handle_t handle, const char *data, std::size_t size) {
   }
 }
 
-void disconnect(handle_t handle) { _command_handler.erase(handle); }
+void disconnect(handle_t handle) {
+  _command_handler.erase(handle);
+  if (_command_handler.empty()) {
+    FileLogger::Deinit();
+  }
+}
 
-} // namespace async
+void finalize() {
+  FileLogger::Deinit();
+  OstreamLogger::DeInit();
+}
+
+}  // namespace async

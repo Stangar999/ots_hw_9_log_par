@@ -2,9 +2,32 @@
 
 #include <functional>
 
+std::shared_ptr<FileLogger> FileLogger::_file_logger = nullptr;
+std::mutex FileLogger::_mx;
+
 std::shared_ptr<FileLogger> FileLogger::GetFileLogger() {
-  static std::shared_ptr<FileLogger> file_logger(new FileLogger);
-  return file_logger;
+  {
+    // TODO пришлось испотльзовать блокировку,
+    // static переменную не получается потокобезопасно заного инициализировать
+    // после вызова DeInit,
+    // а у call_once флаг сбрасывать нельзя
+    // и я не придумал как без блокировки,
+    std::scoped_lock l(_mx);
+    // что бы после вызова DeInit можно было работать дальше по 1 предложению
+    // "переходя в состояние, эквивалентное состоянию до первого вызова
+    // connect."
+    if (!_file_logger) {
+      _file_logger.reset(new FileLogger);
+    }
+  }
+  return _file_logger;
+}
+
+void FileLogger::Deinit() {
+  std::scoped_lock l(_mx);
+  if (_file_logger && _file_logger.unique()) {
+    _file_logger.reset();
+  }
 }
 
 FileLogger::~FileLogger() {
@@ -74,12 +97,13 @@ void FileLogger::WriteAndWaite() {
     // std::this_thread::sleep_for(std::chrono::duration<int, std::deci>(30));
   }
 }
-
 //------------------------------------------------------------------------------
 std::queue<CommandHolder> OstreamLogger::_comand_queue;
 std::condition_variable_any OstreamLogger::cv;
 std::mutex OstreamLogger::m;
-std::jthread OstreamLogger::th_log_cons(WriteConsole);
+// тут поток создается не лениво, лениво потоки создаются в FileLogger
+std::unique_ptr<std::jthread> OstreamLogger::th_log_cons(
+    new std::jthread(WriteConsole));
 
 void OstreamLogger::UpdateEnd(const CommandHolder &comand_holder) {
   {
@@ -89,23 +113,14 @@ void OstreamLogger::UpdateEnd(const CommandHolder &comand_holder) {
   cv.notify_one();
 }
 
+// по 2 предложению, вызов DeInit только из функции finalize()
+// поэтому механизм поавторной инициализации не предусмотрен
+void OstreamLogger::DeInit() {
+  th_log_cons.reset(nullptr);
+}
+
 void OstreamLogger::WriteConsole(std::stop_token stoken) {
   while (!stoken.stop_requested() || !_comand_queue.empty()) {
-    // TODO
-    // bool s = stoken.stop_requested(); //TODO В отладчике после выхода из
-    // main переменная s = true(как и предпологалось) а при запуске без отладки
-    // почему то false, загадка? поэтому при запуске без отладки программа не
-    // завершается, так как поток th_log_cons снова на cv.wait зависает а
-    // задумка была
-    // https://en.cppreference.com/w/cpp/thread/jthread/request_stop пример с
-    // waiting_worker's
-    // обойти эту загадку можно опять исрользовав синглтон, (в десструкторе флаг
-    // конца выставлять), и гарантировать вызов деструктора только единожды а по
-    // другому можно?
-
-    // bool q = _comand_queue.empty();
-    // std::boolalpha(std::cout);
-    // std::cout << s << q << std::endl;
     std::unique_lock l(m);
     cv.wait(l, [&stoken]() {
       return !_comand_queue.empty() || stoken.stop_requested();

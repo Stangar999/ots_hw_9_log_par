@@ -18,9 +18,6 @@ add_executable(log_par_e
 
 #find_library(LibAsync NAMES libasync_l HINTS "${CMAKE_BINARY_DIR}/lib/libasync")
 #target_link_libraries(log_par_e PRIVATE "${LibAsync}")
-
-#target_include_directories(log_par_e PRIVATE "../lib/libasync")
-
 # или просто
 
 target_link_libraries(log_par_e PRIVATE libasync_l)
